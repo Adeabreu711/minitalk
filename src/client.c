@@ -6,36 +6,40 @@
 /*   By: alde-abr <alde-abr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/07 18:24:27 by alde-abr          #+#    #+#             */
-/*   Updated: 2025/03/12 17:40:48 by alde-abr         ###   ########.fr       */
+/*   Updated: 2025/03/17 22:27:44 by alde-abr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../libft/includes/ft_printf.h"
-#include <signal.h>
+#include "../includes/minitalk.h"
 // #include <asm-generic/siginfo.h>
-#define return(E) return(malloc(16), E)
 
-#define MAXTRY 10
+#define MAX_TIME 100
 
-int	ft_pw(int nb, int power)
+int g_countdown = MAX_TIME;
+
+void	send_bit(int sig, int pid)
 {
-	int	temp;
-
-	temp = nb;
-	if (power < 0)
-		return (0);
-	if (power == 0)
-		return (1);
-	while (--power > 0)
-		temp = temp * nb;
-	return (temp);
+	if (kill(pid, sig))
+	{
+		ft_printf("error : the given PID [%i] must be valid\n", pid);
+		exit(0);
+	}
+	while (--g_countdown > 0)
+		usleep(100);
+	if (g_countdown == 0)
+	{
+		ft_printf("error : timeout, client waited [%i]ms", MAX_TIME * 100);
+		exit(0);
+	}
+	usleep(100);
+	g_countdown = MAX_TIME;
 }
 
-void	send_bit(char c, int pid)
+void	send_char(unsigned char c, int pid)
 {
+	int				sig;
 	int				i;
 	unsigned char	mask;
-	int
 
 	i = -1;
 	mask = 0b10000000;
@@ -44,41 +48,49 @@ void	send_bit(char c, int pid)
 		if (mask <= c)
 		{
 			c -= mask;
-			kill(pid, SIGUSR2);
+			send_bit(SIGUSR2, pid);
 		}
 		else
-			kill(pid, SIGUSR1);
+			send_bit(SIGUSR1, pid);
 		mask >>= 1;
 	}
 }
 
-void	init_signals(int sig_c, int sigs[], void(*f)(int, siginfo_t *, void *))
+void	send_str(char *str, int pid)
 {
-	int					i;
-	struct sigaction	s_sa;
+	int	i;
 
-	i = 0;
-	s_sa.sa_sigaction = f;
-	sigemptyset(&s_sa.sa_mask);
+	i = -1;
+	while (str[++i])
+		send_char(str[i], pid);
+	send_char(0, pid);
+}
 
-	while (i < sig_c)
+void	sig_handler(int sig, siginfo_t *siginfo, void *empty)
+{
+	(void)empty;
+	(void)siginfo;
+
+	if (sig == SIGUSR1)
+		g_countdown = -1;
+	else if (sig == SIGUSR2)
 	{
-		sigaddset(&s_sa.sa_mask, sigs[i]);
-		sigaction(sigs[i++], &s_sa, 0);
+		ft_printf("message received.\n");
+		exit(0);
 	}
+	return ;
 }
 
 int	main (int argc, char *argv[])
 {
-	static	sigs[] = {SIGUSR1, SIGUSR2};
+	static	int sigs[2] = {SIGUSR1, SIGUSR2};
 	int	pid;
 
-	if (argc < 3)
+	if (argc != 3)
 		return (0);
-	init_signals();
 	pid = ft_atoi(argv[1]);
-	send_bit(*argv[2], pid);
-	printf ("\nclient PID : %i", pid);
-	kill(pid, SIGUSR1);
+	init_signals(2, sigs, sig_handler);
+	send_str(argv[2], pid);
+	sleep(1);
 	return (0);
 }

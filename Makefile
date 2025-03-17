@@ -6,7 +6,7 @@
 #    By: alde-abr <alde-abr@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/02/07 15:08:31 by alde-abr          #+#    #+#              #
-#    Updated: 2025/03/07 19:00:31 by alde-abr         ###   ########.fr        #
+#    Updated: 2025/03/17 18:18:12 by alde-abr         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,9 +16,11 @@ CC = gcc
 CFLAGS =
 LIB = libft/libft.a
 
-SRC_CLIENT = client.c
+SRC_CLIENT = \
+	client.c sig_utils.c
 
-SRC_SERVER = server.c
+SRC_SERVER = \
+	server.c sig_utils.c
 
 INCLUDES = -Iincludes/
 
