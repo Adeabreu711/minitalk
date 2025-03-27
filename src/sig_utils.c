@@ -6,7 +6,7 @@
 /*   By: alde-abr <alde-abr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/17 18:15:31 by alde-abr          #+#    #+#             */
-/*   Updated: 2025/03/17 20:33:17 by alde-abr         ###   ########.fr       */
+/*   Updated: 2025/03/27 00:38:02 by alde-abr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,18 +26,4 @@ void	init_signals(int sig_c, int sigs[], void(*f)(int, siginfo_t *, void *))
 		sigaddset(&s_sa.sa_mask, sigs[i]);
 		sigaction(sigs[i++], &s_sa, 0);
 	}
-}
-
-int	ft_pw(int nb, int power)
-{
-	int	temp;
-
-	temp = nb;
-	if (power < 0)
-		return (0);
-	if (power == 0)
-		return (1);
-	while (--power > 0)
-		temp = temp * nb;
-	return (temp);
 }
